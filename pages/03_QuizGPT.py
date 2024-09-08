@@ -299,7 +299,7 @@ with st.sidebar:
                 print("Wiki Searching done")
             # todo: add a cache for the wiki search
             # todo: search for a specific section in the wiki article
-    st.write("GitHub Repo:https://github.com/daegyujeong/gpt_practice_dk_v2/blob/778a83d1ab2978365f4293465690e4626520e8d1/pages/03_QuizGPT.py")
+    st.write("GitHub Repo:https://github.com/daegyujeong/gpt_practice_dk_v2/blob/da5dcfccfbb597cdf1bda99893c889bdb8dec875/pages/03_QuizGPT.py")
        
         
 if choice == "File":
