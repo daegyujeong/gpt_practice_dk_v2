@@ -7,7 +7,7 @@ from langchain.callbacks import StreamingStdOutCallbackHandler
 import streamlit as st
 from langchain.retrievers import WikipediaRetriever
 from langchain.schema import BaseOutputParser, output_parser
-
+import os
 
 class JsonOutputParser(BaseOutputParser):
     def parse(self, text):
@@ -194,9 +194,15 @@ formatting_prompt = ChatPromptTemplate.from_messages(
 )
 @st.cache_data(show_spinner="Loading file...")
 def split_file(file):
+    # todo: 한글? 스페이스? 파일명에 들어가면 동작 안함
     st.session_state[f"{file.name}_filecache_updated"] = True
     file_content = file.read()
-    file_path = f"./.cache/quiz_files/{file.name}"
+
+    # Ensure the directory exists
+    file_dir = "./.cache/quiz_files/"
+    os.makedirs(file_dir, exist_ok=True)  # Creates the directory if it doesn't exist
+
+    file_path = f"{file_dir}{file.name}"
     with open(file_path, "wb") as f:
         f.write(file_content)
     splitter = CharacterTextSplitter.from_tiktoken_encoder(
@@ -206,6 +212,9 @@ def split_file(file):
     )
     loader = UnstructuredFileLoader(file_path)
     docs = loader.load_and_split(text_splitter=splitter)
+    # if not docs:
+    #     st.session_state[f"{file.name}_filecache_updated"] = False
+        # todo: check
     return docs
 
 @st.cache_data(show_spinner="Making quiz...")
@@ -252,6 +261,9 @@ with st.sidebar:
             "Upload a .docx , .txt or .pdf file",
             type=["pdf", "txt", "docx"],
         )
+        if file:
+            st.write("File uploaded successfully")
+            split_file(file)
     else:
         topic = st.text_input("Search Wikipedia...")
         section = st.text_input("Type the section...(Future feature)")
@@ -291,11 +303,14 @@ with st.sidebar:
        
         
 if choice == "File":
-    if file:
+    if file: 
         quiz_cached = st.session_state.get(f"{file.name}_filecache_updated")
         print(f"cached_update : {file.name}_filecache_updated :",quiz_cached)
         if quiz_cached:
-         docs = split_file(file)
+            docs = split_file(file)
+            if docs is "[]" or docs is None:
+                # quiz_cached = False
+                print("docs is None")
     else:
         quiz_cached = False
 else:        
@@ -307,7 +322,7 @@ else:
     else:
         quiz_cached = False
 
-print("quiz_cached",quiz_cached,"quiz_generating_btn",quiz_generating_btn)
+print("quiz_cached",quiz_cached,"quiz_generating_btn",quiz_generating_btn,"docs",docs)
 if quiz_generating_btn or quiz_cached:    
     if docs:
         print("start quiz generating")
