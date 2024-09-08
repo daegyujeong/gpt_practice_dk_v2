@@ -214,7 +214,7 @@ def run_quiz_chain(_docs, topic, difficulty_level):
     
     return chain.invoke({"context": format_docs(_docs),
                          "difficulty": difficulty_level,
-                         "question_count": question_count[difficulty_level]})
+                         "question_count": question_count})
 
 
 @st.cache_data(show_spinner="Searching Wikipedia...")
@@ -245,7 +245,8 @@ with st.sidebar:
     else:
         question_count = int(question_count)
 
-    chat_model = st.selectbox("Select GPT model", ["GPT-4o mini, GPT-4o,GPT-4 Turbo and GPT-4,GPT-3.5 Turbo"])  
+    chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo"])  
+    print(chat_model)
     if choice == "File":
         file = st.file_uploader(
             "Upload a .docx , .txt or .pdf file",
@@ -348,7 +349,7 @@ if quiz_generating_btn or quiz_cached:
                 reset_button = st.form_submit_button("Reset Quiz")
 
             elif(quiz_cached):
-                submit_button = st.form_submit_button("Retry")
+                submit_button = st.form_submit_button("Submit")
             else:
                 submit_button = st.form_submit_button("Submit Quiz")
             if submit_button:
