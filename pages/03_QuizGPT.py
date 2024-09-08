@@ -239,13 +239,13 @@ with st.sidebar:
         ),
     )
     difficulty_level = st.selectbox("Select Difficulty", ["VeryEasy","Easy","Normal","Hard","Hell"])
-    question_count = {
-        "VeryEasy": 1,
-        "Easy": 3,
-        "Normal": 5,
-        "Hard": 7,
-        "Hell": 10
-    }    
+    question_count = st.text_input("Enter Question Count")
+    if question_count is not int:
+        question_count = 5
+    else:
+        question_count = int(question_count)
+
+    chat_model = st.selectbox("Select GPT model", ["GPT-4o mini, GPT-4o,GPT-4 Turbo and GPT-4,GPT-3.5 Turbo"])  
     if choice == "File":
         file = st.file_uploader(
             "Upload a .docx , .txt or .pdf file",
@@ -264,7 +264,7 @@ with st.sidebar:
             llm = ChatOpenAI(
                 api_key=api_key,
                 temperature=0.1,
-                model="gpt-3.5-turbo-1106",
+                model=chat_model,
                 streaming=True,
                 callbacks=[StreamingStdOutCallbackHandler()],
             )
@@ -314,7 +314,7 @@ if quiz_generating_btn or quiz_cached:
         llm = ChatOpenAI(
             api_key=api_key,
             temperature=0.1,
-            model="gpt-3.5-turbo-1106",
+            model=chat_model,
             streaming=True,
             callbacks=[StreamingStdOutCallbackHandler()],
         )   
