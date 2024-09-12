@@ -160,7 +160,7 @@ with st.sidebar:
     url = st.text_input(
         "Write down the Sitemap URL", value="https://developers.cloudflare.com/sitemap-0.xml"
     )
-    st.markdown("[GitHub Repo](https://github.com/your-repo-link)")
+    st.markdown("[GitHub Repo](https://github.com/)")
 
 message = st.chat_input("Ask anything about Cloudflare's products...")
 
