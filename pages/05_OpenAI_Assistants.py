@@ -308,7 +308,7 @@ if message:
         client.api_key = api_key
         assistant = client.beta.assistants.create(
             name="Research Assistant",
-            instructions="""You help users do research from the web. use the following tools to help the user:
+            instructions="""You help users do research from the web. use the following tools to help the user and must save the content as a text file.
             1. Search the query using DuckDuckSearchTool.
             2. Search the query using WikiSearchTool.
             3. Save the content as text file.""",
