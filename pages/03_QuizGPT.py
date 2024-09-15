@@ -254,8 +254,11 @@ with st.sidebar:
     else:
         question_count = int(question_count)
 
-    chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo"])  
-    print(chat_model)
+        chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo","o1-preview","o1-mini"])  #"o1-preview","o1-mini" not support yet
+# Check if the selected model is unsupported
+    if chat_model in ["o1-preview", "o1-mini"]:
+        st.warning(f"Model '{chat_model}' is not supported. We will update as soon as they support 😉.\n * Automatically switching to 'gpt-4o-mini'.")
+        chat_model = "gpt-4o-mini"
     if choice == "File":
         file = st.file_uploader(
             "Upload a .docx , .txt or .pdf file",

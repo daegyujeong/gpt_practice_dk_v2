@@ -1,13 +1,1 @@
-# XZ Utils Backdoor
-
-In February 2024, a malicious backdoor was introduced to the Linux utility xz within the liblzma library in versions 5.6.0 and 5.6.1 by an account using the name "Jia Tan". The backdoor gives an attacker who possesses a specific Ed448 private key remote code execution capabilities on the affected Linux system. The issue has been given the Common Vulnerabilities and Exposures number CVE-2024-3094 and has been assigned a CVSS score of 10.0, the highest possible score.
-
-While xz is commonly present in most Linux distributions, at the time of discovery the backdoored version had not yet been widely deployed to production systems, but was present in development versions of major distributions. The backdoor was discovered by the software developer Andres Freund, who announced his findings on 29 March 2024.
-
-## Background on XZ Utils
-
-XZ Utils (previously LZMA Utils) is a set of free software command-line lossless data compressors, including the programs lzma and xz, for Unix-like operating systems and, from version 5.0 onwards, Microsoft Windows. For compression/decompression the Lempel–Ziv–Markov chain algorithm (LZMA) is used. XZ Utils started as a Unix port of Igor Pavlov's LZMA-SDK that has been adapted to fit seamlessly into Unix environments and their usual structure and behavior.
-
-## Implications
-
-The backdoor allows for remote code execution, which poses a significant security risk to affected systems. Users of the affected versions are advised to update their software to mitigate the risks associated with this vulnerability.
+판다 한 마리의 임대 비용은 연간 10억 이상이며, 여기에 중국인 사육사 임대 비용 [14]과 죽순 및 대나무 등 식비용 [15], 환경 관리, 건강 돌봄 등 기타 제비용을 합하면 1년당 수십억 원이 들어가게 된다. 판다월드샵에는 무려 100만원짜리 판다 피규어가 있다. [16] About this app. arrow_forward. ※ Why you should choose PandaVPN! You can use it for free for one day just by signing up! After logging in, just press Panda to connect to the fastest location, making it very convenient to use! Real-time consultation is available in Korean! Enjoy worry-free streaming at fast speeds! 에버랜드 최초로 자연분만으로 태어난 푸바오 와 최초로 쌍둥이로 태어난 루이바오 와 후이바오 의 아빠이자 바오 가족 의 가장이다. 또한 2024년 현재까지 한국에 온 모든 판다들 중 유일한 수컷 판다이다. [11] [12] 이름 러바오는 '기쁨을 주는 보물'이라는 뜻으로 ... 판다. 판다의 생태와 서식지. 판다는 중국의 중남부 산악지대에 서식하는 대형 포유류로, 주로 대나무를 먹고 삽니다. 판다는 엄청난 양의 대나무를 섭취하는데, 하루에 12kg에서 38kg까지 먹는다고 해요. 이 때문에 서식지 내 대나무 숲은 판다 생존에 필수적이죠. 판다 귀환 러시가 잇따르면서 중국의 판다 외교도 종언을 고하는 것 아니냐는 분석들이 나왔다. 판다 화메이가 2000년 8월 미국 캘리포니아주 샌디에이고 동물원에서 대나무를 향해 팔을 뻗고 있다. ap연합뉴스 ...
