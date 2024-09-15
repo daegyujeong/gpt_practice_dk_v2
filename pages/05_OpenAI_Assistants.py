@@ -221,7 +221,7 @@ with st.sidebar:
         st.warning(f"Model '{chat_model}' is not supported. We will update as soon as they support 😉.\n * Automatically switching to 'gpt-4o-mini'.")
         chat_model = "gpt-4o-mini"
      
-    st.write("GitHub Repo:https://github.com/daegyujeong/gpt_pratice_dk/blob/9d8242349586396932d7f030161a55049adfdf12/pages/07_OpenAI_Assistants.py")
+    st.write("GitHub Repo:https://github.com/daegyujeong/gpt_practice_dk_v2/blob/5a7f8047c8e4b6486eeae8b959d1ddc36360effc/pages/05_OpenAI_Assistants.py")
     if API_key_check_btn:
         if  api_key:
             llm = None
