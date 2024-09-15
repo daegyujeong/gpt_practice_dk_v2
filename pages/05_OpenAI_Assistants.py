@@ -12,6 +12,8 @@ from typing import Type
 from bs4 import BeautifulSoup
 import requests
 import time
+# 새로운 주제로 넘기는 버튼
+# 이어서 대화 가능하도록 아이디 그래도 유지하면서 새로운 주제로 넘기기
 st.set_page_config(
     page_title="OpenAI_Assistants",
     page_icon="📃",
@@ -22,7 +24,7 @@ def DuckDuckSearchTool(inputs):
     print("DuckDuck search start")
     query = inputs["query"]
     results = ddg.run(query)
-    send_message(f"This is the DuckDuckSearchTool result \n DuckDuckSearchTool result: {results}", "assistant")  # Send only text content to the user
+    send_message(f"This is the DuckDuckSearchTool brief result \n\n DuckDuckSearchTool result: {results[:500]}.....", "assistant")  # Send only text content to the user
     # # Assuming the results are a JSON object and the first result's URL is accessible via ['results'][0]['url']
     # if results and 'results' in results and len(results['results']) > 0:
     #     url = results[0]['link']  # Access the URL of the first result
@@ -46,9 +48,13 @@ def WikiSearchTool(inputs):
     docs = retriever.invoke(query)
     print("Wiki results:",docs)
     results = ""
+    results_display = ""
     for content in docs:
         results += f"{content.page_content}\n"
-    send_message(f"This is the WikiSearchTool result \n WikiSearchTool result: {results}", "assistant")  # Send only text content to the user
+        results_display += f"Title: {content.metadata.get('title', 'No title')}\n\n"
+        results_display += f"Summary: {content.page_content[:300]}....."  # Limit content to the first 500 characters for brevity
+        results_display += "\n\n"        
+    send_message(f"This is the WikiSearchTool brief result \n\n WikiSearchTool result: {results_display}", "assistant")  # Send only text content to the user
     return results
 
 def SaveToTextFileTool(inputs):
@@ -298,14 +304,14 @@ if "messages" in st.session_state:
 
 message = st.chat_input("Ask anything...")
 if message:
-    if st.session_state["APIKEY_failed"] == False:
+    if st.session_state.get("APIKEY_failed", True) == False:
         client.api_key = api_key
         assistant = client.beta.assistants.create(
             name="Research Assistant",
-            instructions="""You help users do research from the web.
-            Search the query using WikiSearchTool.
-            Search the query using DuckDuckSearchTool.
-            Save the content as text file.""",
+            instructions="""You help users do research from the web. use the following tools to help the user:
+            1. Search the query using DuckDuckSearchTool.
+            2. Search the query using WikiSearchTool.
+            3. Save the content as text file.""",
             model=chat_model,
             tools=functions,
         )    
@@ -365,7 +371,7 @@ if message:
 
         # st.rerun()
     else:
-        st.error("Invalid API Key. Please enter a valid API Key")
+        st.error("Invalid API Key. Please enter a valid API Key or Check API KEY")
         st.stop()
 else:
     st.session_state["messages"] = []
