@@ -1,6 +1,7 @@
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.chat_models import ChatOpenAI
+from langchain.agents import AgentExecutor
 from pydantic import BaseModel, Field
 # from langchain.utilities.wikipedia import WikipediaAPIWrapper # change to WikipediaRetriever
 from langchain.retrievers import WikipediaRetriever
@@ -18,6 +19,15 @@ st.set_page_config(
     page_title="OpenAI_Assistants",
     page_icon="📃",
 )
+
+if 'messages' not in st.session_state:
+    st.session_state["messages"] = []
+if 'count' not in st.session_state:
+    st.session_state['count'] = 0
+if 'download_buttons' not in st.session_state:
+    st.session_state['download_buttons'] = []
+
+
 def DuckDuckSearchTool(inputs):
     print("DuckDuck search tool inputs:",inputs)
     ddg = DuckDuckGoSearchAPIWrapper()
@@ -60,6 +70,8 @@ def WikiSearchTool(inputs):
 def SaveToTextFileTool(inputs):
     try:
         file_path = f"MyResearch.txt"
+        text = inputs["text"]
+
         if 'count' not in st.session_state:
             st.session_state['count'] = 0
         mykey = st.session_state['count']
@@ -75,28 +87,33 @@ def SaveToTextFileTool(inputs):
         #     #     # st.download_button('Download CSV', f) 
         #     #     print(f"Saved text from URL to file: {file_path}")
         # else:
-        text = inputs["text"]
-        send_message(f"This is the result \n result: {text}", "assistant")  # Send only text content to the user
-        st.download_button('Download text', text, 'text',key = mykey)
-        with open(file_path, 'w') as f:
-            f.write(text)
-            print(f"Saved text from URL to file: {file_path}")
+        download_id = f"download_{mykey}"
+
+        download_button_data = {
+            'id': download_id,
+            'text': text,
+            'label': 'Download text',
+            'file_name': file_path
+        }
+
         st.session_state['count'] += 1
+
+        # Send message with download_button_data
+        send_message(
+            f"This is the result \n result: {text}",
+            "assistant",
+            download_button_data=download_button_data
+        )
+        # with open(file_path, 'w') as f:
+        #     f.write(text)
+        #     print(f"Saved text from URL to file: {file_path}")
+        st.session_state['count'] += 1
+
         return "Text saved to file."
-    except requests.RequestException as e:
-        text = inputs["text"]
-        send_message(f"This is the result \n result: {text}", "assistant")  # Send only text content to the user
-        st.download_button('Download text', text, 'text',key = mykey)
-        st.session_state['count'] += 1
-        return f"Failed to load URL: {str(e)}"
-    except ValueError:
-        text = inputs["text"]
-        send_message(f"This is the result \n result: {text}", "assistant")  # Send only text content to the user
-        st.download_button('Download text', text, 'text',key = mykey)
-        st.session_state['count'] += 1
-        with open(file_path, 'w') as f:
-            f.write(text)     
-        return "URL did not return a JSON response."  
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+    
+
 def get_tool_outputs(run_id, thread_id):
     run = get_run(run_id, thread_id)
     outputs = []
@@ -104,13 +121,22 @@ def get_tool_outputs(run_id, thread_id):
         action_id = action.id
         function = action.function
         print(f"Calling function: {function.name} with arg {function.arguments}")
-        print(json.loads(function.arguments))
-        outputs.append(
-            {
-                "output": functions_map[function.name](json.loads(function.arguments)),
-                "tool_call_id": action_id,
-            }
-        )
+        try:
+            print(json.loads(function.arguments))
+            outputs.append(
+                {
+                    "output": functions_map[function.name](json.loads(function.arguments)),
+                    "tool_call_id": action_id,
+                }
+            )
+        except Exception as e:
+            print(f"Error calling{function.arguments} : {str(e)}")
+            outputs.append(
+                {
+                    "output": f"Error calling function {function.name}: {str(e)}",
+                    "tool_call_id": action_id,
+                }
+            )
     return outputs    
 
 def submit_tool_outputs(run_id, thread_id):
@@ -120,6 +146,28 @@ def submit_tool_outputs(run_id, thread_id):
     )
 @st.cache_data
 def create_run(thread_id, assistant_id):
+    # Retrieve the list of runs associated with the thread
+    # 실행중 오류 발생 후 해당 키워드 다시 검색 시 실행중인 run이 있으면 취소하고 새로운 run 생성
+    runs = client.beta.threads.runs.list(thread_id=thread_id)
+    active_run = None
+    for run in runs:
+        if run.status in ['queued', 'in_progress', 'requires_action']:
+            active_run = run
+            break
+
+    if active_run:
+        print(f"Active run {active_run.id} found for thread {thread_id}. Waiting for it to complete or canceling it.")
+        # Optionally, you can wait for it to complete or cancel it
+        # Here, we'll cancel the active run
+        client.beta.threads.runs.cancel(run_id=active_run.id, thread_id=thread_id)
+        # Wait for the run to be canceled
+        while True:
+            run_status = client.beta.threads.runs.retrieve(run_id=active_run.id, thread_id=thread_id).status
+            if run_status == 'cancelled':
+                break
+            time.sleep(1)
+
+    # Now, create a new run
     return client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id,
@@ -253,9 +301,6 @@ def get_required_action(run_id, thread_id):
     run = get_run(run_id, thread_id)
     return run.required_action
 
-def save_message(message, role):
-    st.session_state["messages"].append({"message": message, "role": role})
-
 def get_messages(thread_id):
     messages = client.beta.threads.messages.list(thread_id=thread_id)
     messages = list(messages)
@@ -268,23 +313,65 @@ def get_messages(thread_id):
         # for debugging
     return last_message
     
+def save_message(message, role, download_id=None):
+    st.session_state["messages"].append({
+        "message": message,
+        "role": role,
+        "download_id": download_id
+    })
 
-
-def send_message(message, role, save=True):
+def send_message(message, role, save=True, download_button_data=None):
     with st.chat_message(role):
         st.markdown(message)
+        if download_button_data:
+            # Initialize the 'download_buttons' list if it doesn't exist
+            if 'download_buttons' not in st.session_state:
+                st.session_state['download_buttons'] = []
+
+            # Store the download button data in session state
+            st.session_state['download_buttons'].append(download_button_data)
+
+            # Display the download button
+            st.download_button(
+                label=download_button_data['label'],
+                data=download_button_data['text'],
+                file_name=download_button_data['file_name'],
+                key=download_button_data['id']
+            )
     if save:
-        save_message(message, role)
+        # Save the message, including the download_id if available
+        save_message(
+            message,
+            role,
+            download_id=download_button_data['id'] if download_button_data else None
+        )
 
-def paint_message(message, role):
+
+
+def paint_message(message, role, download_id):
     with st.chat_message(role):
         st.markdown(message)
+        download_data = None;
+        if download_id:
+            # Find the corresponding download button data
+            download_data = next(
+                (item for item in st.session_state['download_buttons'] if item['id'] == download_id),
+                None
+            )
+        if download_data:
+            st.download_button(
+            label=download_data['label'],
+                data=download_data['text'],
+                file_name=download_data['file_name'],
+                key=download_data['id']
+            )
 
 def paint_history():
     for message in st.session_state["messages"]:
         paint_message(
             message["message"],
-            message["role"]
+            message["role"],
+            message["download_id"]
         )
 
 
@@ -292,16 +379,17 @@ def paint_history():
 
 st.title("Assistants GPT")
 
-st.markdown(
-    """
-Welcome!
-            
-Use this chatbot to ask any questions!
-"""
-)
-if "messages" in st.session_state:
-    paint_history()
 
+if len(st.session_state["messages"])>0:
+    paint_history()
+else:
+    st.markdown(
+    """
+    Welcome!
+                
+    Use this chatbot to ask any questions!
+    """
+    )
 message = st.chat_input("Ask anything...")
 if message:
     if st.session_state.get("APIKEY_failed", True) == False:
@@ -352,7 +440,7 @@ if message:
                 for action in run.required_action.submit_tool_outputs.tool_calls:
                     action_id = action.id
                     function = action.function
-                    send_message(f"Calling function: {function.name} with arg {function.arguments}", "assistant")                        
+                    # send_message(f"Calling function: {function.name} with arg {function.arguments}", "assistant",False)                        
                 submit_tool_outputs(run.id, thread.id)
                 count = count + 1
             elif run_status == 'queued':
@@ -364,14 +452,16 @@ if message:
             elif run_status == 'cancelled':
                 print("Run is cancelled.")
             print(f"Current run status: {run.status}, waiting for completion...")
+            waiting_time = int((time.time() - start_time)*10)/10
+            send_message(f"Current run status: {run.status}, waiting for completion... Waiting Time(sec):{waiting_time} / Time Out(sec):120", "ai",False)
             time.sleep(5)  # Wait for 5 seconds before checking again
         result = get_messages(thread.id)
         print(st.session_state["messages"])
-        # send_message(result, "assistant")
 
-        # st.rerun()
+        # send_message(result, "assistant")
+        st.session_state['regenerate'] = False
     else:
         st.error("Invalid API Key. Please enter a valid API Key or Check API KEY")
         st.stop()
-else:
-    st.session_state["messages"] = []
+# else:
+    # st.session_state["messages"] = []
