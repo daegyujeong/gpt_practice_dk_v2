@@ -263,11 +263,11 @@ with st.sidebar:
         st.error("Please enter your OpenAI API Key")    
     if st.session_state.get("APIKEY_failed"):  
         st.error("Invalid API Key. Please enter a valid API Key")
-    chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo","o1-preview","o1-mini"])  #"o1-preview","o1-mini" not support yet
+    chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo","o1-preview","o1-mini","o1-preview-2024-09-12"])  #"o1-preview","o1-mini" not support yet
 # Check if the selected model is unsupported
-    if chat_model in ["o1-preview", "o1-mini"]:
-        st.warning(f"Model '{chat_model}' is not supported. We will update as soon as they support 😉.\n * Automatically switching to 'gpt-4o-mini'.")
-        chat_model = "gpt-4o-mini"
+    # if chat_model in ["o1-preview", "o1-mini"]:
+    #     st.warning(f"Model '{chat_model}' is not supported. We will update as soon as they support 😉.\n * Automatically switching to 'gpt-4o-mini'.")
+    #     chat_model = "gpt-4o-mini"
         
     st.write("GitHub Repo:https://github.com/daegyujeong/gpt_practice_dk_v2/blob/d08a15d96013984b82b4a4f080814078559953be/pages/05_OpenAI_Assistants.py")
     if API_key_check_btn:
