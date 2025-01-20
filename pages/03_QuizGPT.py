@@ -240,6 +240,13 @@ with st.sidebar:
     api_key = st.text_input("Enter your OpenAI API Key")
     if not api_key or st.session_state.get("APIKEY_failed"):
         st.error("Please enter your OpenAI API Key")
+
+    API_key_check_btn = st.button("Check API KEY")
+    if not api_key:
+        st.error("Please enter your OpenAI API Key")    
+    if st.session_state.get("APIKEY_failed"):  
+        st.error("Invalid API Key. Please enter a valid API Key")
+    chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo","o1-preview","o1-mini","o1-preview-2024-09-12"])  #"o1-preview","o1-mini" not support yet        
     choice = st.selectbox(
         "Choose what you want to use.",
         (
@@ -254,11 +261,7 @@ with st.sidebar:
     else:
         question_count = int(question_count)
 
-        chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo","o1-preview","o1-mini"])  #"o1-preview","o1-mini" not support yet
-# Check if the selected model is unsupported
-    if chat_model in ["o1-preview", "o1-mini"]:
-        st.warning(f"Model '{chat_model}' is not supported. We will update as soon as they support 😉.\n * Automatically switching to 'gpt-4o-mini'.")
-        chat_model = "gpt-4o-mini"
+
     if choice == "File":
         file = st.file_uploader(
             "Upload a .docx , .txt or .pdf file",
@@ -302,7 +305,7 @@ with st.sidebar:
                 print("Wiki Searching done")
             # todo: add a cache for the wiki search
             # todo: search for a specific section in the wiki article
-    st.write("GitHub Repo:https://github.com/daegyujeong/gpt_practice_dk_v2/blob/da5dcfccfbb597cdf1bda99893c889bdb8dec875/pages/03_QuizGPT.py")
+    st.write("GitHub Repo:https://github.com/daegyujeong/gpt_practice_dk_v2/blob/b80cbed27a063767dee7ae8bb923c1f9567818c3/pages/03_QuizGPT.py")
        
         
 if choice == "File":
