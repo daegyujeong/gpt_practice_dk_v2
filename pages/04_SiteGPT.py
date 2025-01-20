@@ -156,12 +156,24 @@ st.markdown(
 )
 
 with st.sidebar:
-    st.text_input("Your OpenAI API Key", key="openai_key")
+    api_key = st.text_input("Your OpenAI API Key", key="openai_key")
     url = st.text_input(
         "Write down the Sitemap URL", value="https://developers.cloudflare.com/sitemap-0.xml"
     )
     st.markdown("[GitHub Repo](https://github.com/)")
-
+    API_key_check_btn = st.button("Check API KEY")
+    if not api_key:
+        st.error("Please enter your OpenAI API Key")    
+    if st.session_state.get("APIKEY_failed"):  
+        st.error("Invalid API Key. Please enter a valid API Key")
+    chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo","o1-preview","o1-mini","o1-preview-2024-09-12"])  #"o1-preview","o1-mini" not support yet        
+    choice = st.selectbox(
+        "Choose what you want to use.",
+        (
+            "File",
+            "Wikipedia Article",
+        ),
+    )
 message = st.chat_input("Ask anything about Cloudflare's products...")
 
 if message:
