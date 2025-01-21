@@ -247,6 +247,24 @@ with st.sidebar:
     if st.session_state.get("APIKEY_failed"):  
         st.error("Invalid API Key. Please enter a valid API Key")
     chat_model = st.selectbox("Select GPT model", ["gpt-4o-mini", "gpt-4o","gpt-4-turbo","gpt-3.5-turbo","o1-preview","o1-mini","o1-preview-2024-09-12"])  #"o1-preview","o1-mini" not support yet        
+    if API_key_check_btn:
+        if  api_key:
+            llm = None
+            # for checking if the API Key is valid
+            try:
+                llm = ChatOpenAI(
+                    api_key=api_key,
+                    temperature=0.1,
+                    model="gpt-3.5-turbo-1106",
+                )
+                llm.invoke("Hello!")   
+                st.session_state["APIKEY_failed"] = False
+                st.success("API Key is valid")
+                # You might want to add a simple test call here if the API does not get invoked elsewhere immediately
+            except Exception as e:
+                st.markdown(f"Failed to initialize ChatOpenAI: {str(e)}")   
+                st.session_state["APIKEY_failed"] = True
+                st.rerun()          
     choice = st.selectbox(
         "Choose what you want to use.",
         (
